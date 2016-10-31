@@ -1,0 +1,19 @@
+{
+  "name": "",
+  "version": "",
+  "description": "",
+  "main": "jquery.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "connect": "^3.5.0",
+    "express": "^4.13.4",
+    "mongodb": "^2.2.11",
+    "mongoose": "^4.6.5"
+  }
+}
