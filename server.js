@@ -6,9 +6,6 @@ var mongoose = require('mongoose');
 require('./db.js');
 
 
-//mongoose.model('usermodel',{name: String});
-
-
 
 
 var user = require("./models/users.js");
