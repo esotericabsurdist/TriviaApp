@@ -17,10 +17,14 @@ app.listen(PORT, function() {
  each document is an instance of the questionSchema. */
 var questions = require("./models/questionSchema.js");
 var questionCount = 2; // for testing, we have a 2 questions already.
+/*//This should be set on start up by asyn method:
 
-console.log(questionData);
+ questions.count({},function(err,numberQuestions){
+    questionCount = numberQuestions;
+ });
 
 
+*/
 
 //==============================================================================
 app.get('/question', function(req,res){
@@ -34,7 +38,7 @@ app.get('/question', function(req,res){
     if (err) return handleError(err);
 
     var questionText = questionData.question;
-    var answerID = questionData.answerID;
+    var answerID = questionData.answerId;
 
     var questionResonseData = {
       question: questionText,
@@ -42,7 +46,6 @@ app.get('/question', function(req,res){
     }
     res.json(questionResonseData);
   });
-
 });
 //==============================================================================
 app.post('/question', function(req, res) {
@@ -74,5 +77,20 @@ app.post('/question', function(req, res) {
     });
 
     res.end();
+});
+//==============================================================================
+app.post('/answer', function(req, res){
+
+    var answerText = req.answer;
+    var answerID = req.answerId;
+
+    questions.findOne({'answerID': answerID}, function (err, questionData){
+        if( answerText == questionData.answer){
+          res.send(true);
+        }
+        else {
+          res.send(false);
+        }
+    }
 });
 //==============================================================================
