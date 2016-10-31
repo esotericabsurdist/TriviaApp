@@ -1,4 +1,2 @@
-# 473assignment4
-# Assignment473
-# 473Assignment4
-# 473Assignment4
+1st run "mongod"
+2nd run "npm start"
