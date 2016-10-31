@@ -3,52 +3,33 @@ var app = express();
 var bodyParser = require('body-parser');
 var fs = require('fs');
 var mongoose = require('mongoose');
+var PORT = process.env.PORT || 3000;
+
+
+
+app.use(express.static(__dirname));
+app.use(bodyParser.json());
+
 require('./db.js');
 
 
+//var db = mongoose.connection;
 
+var question = require("./models/questionSchema.js");
 
-var user = require("./models/users.js");
-
-app.get('/usermodel', function(req,res){
+app.get('/question', function(req,res){
   //mongoose.model('users').find(function(err, users){
     mongoose.model('usermodel').find(function(err, usermodel){
       res.send(usermodel);
     });
-  });
+
+});
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-var questions = [
-{
-    id: 1,
-    name: 'Who was the first computer programmer?'
-},
-
-];
-
-
-
-var currentId = 2;
-
-var PORT = process.env.PORT || 3000;
-
-app.use(express.static(__dirname));
-app.use(bodyParser.json());
 
 app.get('/questions', function(req, res) {
     res.send({ questions: questions });
