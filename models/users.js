@@ -1,9 +1,8 @@
 var mongoose = require('mongoose');
 
 var questionSchema = new mongoose.Schema({
-  name: String
+  question: String, answer: 'string'
 
 });
 
-var model = mongoose.model('user', questionSchema);
-module.exports = model;
+mongoose.model('usermodel', {name: String});

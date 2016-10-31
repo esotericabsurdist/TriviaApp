@@ -6,15 +6,33 @@ var mongoose = require('mongoose');
 require('./db.js');
 
 
+//mongoose.model('usermodel',{name: String});
+
+
+
 
 var user = require("./models/users.js");
 
-app.get('/users', function(req,res){
+app.get('/usermodel', function(req,res){
   //mongoose.model('users').find(function(err, users){
-    user.find(function(err, users){
-    res.json({users : users});
+    mongoose.model('usermodel').find(function(err, usermodel){
+      res.send(usermodel);
+    });
   });
-});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
