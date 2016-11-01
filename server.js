@@ -16,14 +16,16 @@ app.listen(PORT, function() {
 /* handle for questions collection in db. collections contain documents.
  each document is an instance of the questionSchema. */
 var questions = require("./models/questionSchema.js");
+
+
 var questionCount = 2; // for testing, we have a 2 questions already.
-/*//This should be set on start up by asyn method:
-
- questions.count({},function(err,numberQuestions){
-    questionCount = numberQuestions;
- });
-
-
+//This should be set on start up by asyn method, better would be inside proper method bc stateless.
+/*
+var questionCount = 0;
+questions.find({}).count(function(err, numberQuestions){
+    questionCount = numberQutions;
+    console.log(numberQuestions);
+});
 */
 
 //==============================================================================
@@ -38,7 +40,7 @@ app.get('/question', function(req,res){
     if (err) return handleError(err);
 
     var questionText = questionData.question;
-    var answerID = questionData.answerId;
+    var answerID = questionData.answerID;
 
     var questionResonseData = {
       question: questionText,
@@ -59,7 +61,7 @@ app.post('/question', function(req, res) {
     // Get data:
     var questionText = req.body.question;
     var answerText = req.body.answer;
-    var answerID = questionCount + 1;
+    var answerID = questionCount + 1; // right here i need updated questionCount.
 
     var newQuestion = {
       question: questionText,
@@ -82,15 +84,31 @@ app.post('/question', function(req, res) {
 app.post('/answer', function(req, res){
 
     var answerText = req.answer;
-    var answerID = req.answerId;
+    var answerID = req.answerID;
+
+    //TODO update Redis db with wrong or right answer. 
 
     questions.findOne({'answerID': answerID}, function (err, questionData){
         if( answerText == questionData.answer){
-          res.send(true);
+          responseData = {
+            correct: true;
+          }
+          res.json(responseData);
         }
         else {
-          res.send(false);
+          responseData = {
+            correct: false;
+          }
+          res.send(responseData);
         }
-    }
+      }
+    );
+});
+//==============================================================================
+app.get('/score', function(req, res){
+    /* */
+    // TODO return number of wrong and right answers from redis db
+
+
 });
 //==============================================================================
