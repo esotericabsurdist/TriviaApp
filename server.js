@@ -4,29 +4,32 @@ var bodyParser = require('body-parser');
 var fs = require('fs');
 var mongoose = require('mongoose');
 var PORT = process.env.PORT || 3000;
+// mongo====
 require('./db.js'); // MongoDB COnnection.
 var db = mongoose.connection;
+/* handle for questions collection in db. collections contain documents.
+ each document is an instance of the questionSchema. */
+var questions = require("./models/questionSchema.js");
+//==========
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
+//redis=====
+var redis = require("redis"); // redis
+var redisClient = redis.createClient();
+var counts = { "right answers": 0,
+                "wrong": 0};
+//==========
+
+
+redisClient.incr("right");
+
+
 
 app.listen(PORT, function() {
     console.log('Server listening on ' + PORT);
 });
 
-/* handle for questions collection in db. collections contain documents.
- each document is an instance of the questionSchema. */
-var questions = require("./models/questionSchema.js");
 
-
-var questionCount = 2; // for testing, we have a 2 questions already.
-//This should be set on start up by asyn method, better would be inside proper method bc stateless.
-/*
-var questionCount = 0;
-questions.find({}).count(function(err, numberQuestions){
-    questionCount = numberQutions;
-    console.log(numberQuestions);
-});
-*/
 
 //==============================================================================
 app.get('/question', function(req,res){
@@ -46,12 +49,13 @@ app.get('/question', function(req,res){
       question: questionText,
       answerId: answerID
     }
+    res.setHeader('Content-Type', 'application/json');
     res.json(questionResonseData);
   });
 });
 //==============================================================================
 app.post('/question', function(req, res) {
-    /* Should receive this format.
+    /* Should receive this format. and insert to mongo db as per schema.
     {
       question: "Who led software development for NASA's Apollo lunar mission?",
       answer: "Margaret Hamilton"
@@ -61,54 +65,96 @@ app.post('/question', function(req, res) {
     // Get data:
     var questionText = req.body.question;
     var answerText = req.body.answer;
-    var answerID = questionCount + 1; // right here i need updated questionCount.
+    var answerId = null;
 
-    var newQuestion = {
-      question: questionText,
-      answer: answerText,
-      answerId: answerID
-    }
+    questions.find({}).count(function(err, numberQuestions){
+        // set proper question id.
+        answerId = numberQuestions + 1;
 
-    questions.insert(newQuestion, function(err, data){
-      if(err){
-        console.log(err)
-      }
-      else{
-        console.log("Inserted New Question");
-      }
+        console.log(answerId);
+
+
+        // build question to insert based on schema.
+        var newQuestion =
+        {
+          question: questionText,
+          answer: answerText,
+          answerID: answerId
+        }
+
+        // insert to mongoDB, this is asynchronous. The create method adds version keys.
+        questions.create(newQuestion, function(err, data){
+          if(err){
+            console.log(err)
+            res.end();
+          }
+          else{
+            console.log("Inserted New Question");
+            res.end();
+          }
+        });
     });
-
-    res.end();
 });
 //==============================================================================
 app.post('/answer', function(req, res){
 
-    var answerText = req.answer;
-    var answerID = req.answerID;
-
-    //TODO update Redis db with wrong or right answer. 
+    var answerText = req.body.answer;
+    var answerID = req.body.answerID;
 
     questions.findOne({'answerID': answerID}, function (err, questionData){
+
         if( answerText == questionData.answer){
-          responseData = {
-            correct: true;
+          // data to return
+          var responseData = {
+            correct: true
           }
+
+          // update the counts of right
+          redisClient.incr("right");
+
+          // return the result.
           res.json(responseData);
         }
         else {
-          responseData = {
-            correct: false;
+          // data to return
+          var responseData = {
+            correct: false
           }
+
+          // update the counts of wrong
+          redisClient.incr("wrong");
+
+          // return the result.
           res.send(responseData);
         }
       }
     );
+
+
 });
 //==============================================================================
 app.get('/score', function(req, res){
-    /* */
-    // TODO return number of wrong and right answers from redis db
+  /* format response like so:
+    {
+    right: 2,
+    wrong: 1
+  }
+  */
 
+  // get wrong and right from computer, computer knows all.
+  // get from redis is asynchronous so send data in callback.
+  redisClient.mget("right", "wrong", function(err, scoreData){
+      var rightScore = scoreData[0]; // right score
+      var wrongScore = scoreData[1]; // wrong score
 
+      // data to return.
+      var score = {
+        right: rightScore,
+        wrong: wrongScore
+      }
+
+      // send score data
+      res.json(score);
+  });
 });
 //==============================================================================
