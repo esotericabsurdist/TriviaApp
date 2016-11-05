@@ -10,6 +10,7 @@ var db = mongoose.connection;
 /* handle for questions collection in db. collections contain documents.
  each document is an instance of the questionSchema. */
 var questions = require("./models/questionSchema.js");
+var seed = require("./models/seed.js");
 //==========
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
