@@ -104,7 +104,7 @@ app.post('/answer', function(req, res){
 
     questions.findOne({'answerID': answerID}, function (err, questionData){
 
-        if( answerText == questionData.answer){
+        if( answerText === questionData.answer){
           // data to return
           var responseData = {
             correct: true
